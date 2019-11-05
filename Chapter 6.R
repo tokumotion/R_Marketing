@@ -292,3 +292,41 @@ summary(seg.df.chain)
 # (“Quantiles...”) is what we prefer to use instead; it reports the actual 
 # observed quantiles for each of the parameters.
 
+# Note that the model estimates an overall mu that is the best guess for the 
+# population mean regardless of segment effects, and then estimates each 
+# segment as a deviation from that.
+
+# To estimate the direct values for each segment, we add the population value 
+# (mu) to the deviations for each segment. However, we cannot simply do that 
+# with the aggregate numbers here by adding the mu row to each of the other 
+# rows. Why not? Because the best estimates of segment totals are found within 
+# each draw; we need to compute segment values at that level and then summarize
+# those estimates. Luckily that is easy to do in R.
+
+head(seg.df.chain)
+seg.df.chain[1:4, 1:5]  
+# We split the dataframe in the average (mu) and the segments
+
+seg.df.chain[1:4, 1:5] + seg.df.chain[1:4, 1] # We add up mu to segments
+seg.bf.chain.total <- seg.df.chain[, 2:5] + seg.df.chain[, 1]   
+# We add up mu to all segments in this df
+
+seg.bf.ci <- t(apply(seg.bf.chain.total, 2, 
+                     quantile, pr = c(0.025, 0.5, 0.975)))
+# In the apply() command, we applied the quantile() function to the columns 
+# with the probabilities that we wanted for a 95% credible interval. Then we 
+# transposed the result with t() to be more readable (treating the segments as 
+# “cases”).
+
+seg.bf.ci
+# Those values are the best estimates of the 95% credible range for the 
+# estimate of average income as modeled by segment, under the assumptions of 
+# our model.
+
+# Plotting the Bayesian Credible Intervals
+library(ggplot2)
+seg.bf.df <- data.frame(seg.bf.ci)
+seg.bf.df$Segment <- rownames(seg.bf.df)
+p <- ggplot(seg.bf.df, aes(x = Segment, y = X50., ymax = X97.5., ymin = X2.5.))
+p <- p + geom_point(size = 4) + geom_errorbar(width = 0.2) + ylab('Income')
+p + ggtitle('95% CI for Mean Income by Segment') + coord_flip()
