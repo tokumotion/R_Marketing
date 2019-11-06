@@ -29,6 +29,7 @@ nresp <- 500  # number of survey respondents
 # halo, that does not appear in the final data but is used to influence the 
 # other ratings:
 halo <- rnorm(n = nresp, mean = 0, sd = 5)  # Simulate satisfaction halo
+<<<<<<< HEAD
 
 # We generate responses for the satisfaction ratings by adding each 
 # respondent’s halo to the value of another random variable that is specific to
@@ -81,3 +82,5 @@ gpairs::gpairs(sat.df)
 
 # Convert distance to a normal distribution using log()
 sat.df$logdist <- log(sat.df$distance)
+=======
+>>>>>>> b87494d5492d6f4d29481c5539c18bf582c112f7
