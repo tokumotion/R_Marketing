@@ -31,6 +31,10 @@ exp(coef(glm(Pass ~ Promo, family = binomial, data = pass.df)))
 # calculate confidence intervals of odds ratio
 exp(confint(glm(Pass ~ Promo, family = binomial, data = pass.df)))
 
+# visualize the data, for doubledecker plot we need to use table(df)
+doubledecker(table(pass.df))
+# we see from the data that Promo is not effective in Park o Mail
+
 # how do we know in which channel the promo is effective?
 summary(glm(Pass ~ Promo + Channel + Promo:Channel, 
             family = binomial, data = pass.df))
