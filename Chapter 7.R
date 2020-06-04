@@ -82,5 +82,156 @@ gpairs::gpairs(sat.df)
 
 # Convert distance to a normal distribution using log()
 sat.df$logdist <- log(sat.df$distance)
-=======
->>>>>>> b87494d5492d6f4d29481c5539c18bf582c112f7
+
+# The pairwise scatterplots of our continuous measures are generally elliptical
+# in shape, which is a good indication that they are appropriate to use in a 
+# linear model.
+
+# A common issue with marketing data and especially satisfaction surveys is 
+# that variables may be highly correlated with one another. Although we as 
+# marketers care about individual elements of customers’ experiences such as
+# their amusement park experience with rides and games, when completing a 
+# survey, the respondents might not give independent ratings to each of those
+# items. They may instead form an overall halo rating and rate individual 
+# elements of the experience in light of that overall feeling.
+
+corrplot::corrplot.mixed(cor(sat.df[, c(2, 4:9)]), upper = 'ellipse')
+
+# For example, to what extent is satisfaction with the park’s rides related
+# to overall experience? Is the relationship strong or weak? One way to assess
+# this is to plot those two variables against each other
+
+plot(overall~rides, data = sat.df,
+     xlab = 'Satifsfaction with rides', ylab = 'Overall Satisfaction')
+
+# Linear Model with Single Predictor
+
+m1 <- lm(overall~rides, data = sat.df)
+plot(overall~rides, data = sat.df,
+     xlab = 'Satifsfaction with rides', ylab = 'Overall Satisfaction')
+abline(m1, col = 'blue')
+summary(m1)
+
+# The Std. Error column indicates uncertainty in the coefficient estimate, 
+# under the assumption that the data are a random sample of a larger population
+
+# The “t value”, p-value (“Pr(>|t|)”), and significance codes indicate a Wald
+# test, which assesses whether the coefficient is significantly different 
+# than zero. A traditional estimate of a 95% confidence interval for the 
+# coefficient estimate is that it will fall within ± 1.96 × std.error. In this
+# case, 1.7033 ± 1.96 × 0.1055=(1.495,1.910), rides estimate is 1.7152. So we 
+# are confident—assuming the model is appropriate and the data are 
+# representative—that the coefficient for ride is 1.495–1.910.
+
+confint(m1)  # Confidence Interval
+
+# The Residuals section in the summary(m1) output tells us how closely the 
+# data follow the best fit line. A residual is the difference between the 
+# model-predicted value of a point and its actual value. This is the vertical
+# distance between a plotted point (actual value) and the blue line (predicted
+# value).
+
+# In the summary of m1, we see that the residuals are quite wide, ranging from
+# − 33.597 to 34.699, which means our predictions can be quite a bit off for 
+# any given data point (more than 30 points on the rating scale). The quartiles
+# of the residuals suggest that they are fairly symmetric around 0. That is a 
+# good sign that the model is unbiased (although perhaps imprecise).
+
+# R-squared, a measure of how much variation in the dependent variable is 
+# captured by the model. In this case, the R-squared is 0.3434, indicating 
+# that about a third of the variation in overall satisfaction is explained by 
+# variation in satisfaction with rides. When a model includes only a single 
+# predictor, R-squared is equal to the square of the correlation coefficient r
+# between the predictor and the outcome.
+
+# F-statistic: provides a statistical test of whether the model predicts the 
+# data better than simply taking the average of the outcome variable and using 
+# that as the single prediction for all the observations. In essence, this test
+# tells whether our model is better than a model that predicts overall 
+# satisfaction using no predictors. In the present case, the F-statistic shows 
+# a p-value < .05, so we reject the null hypothesis that a model without 
+# predictors performs as well as model m1.
+
+# Checking model fit
+
+# The first is that the relationship between the predictors and the outcomes is
+# linear. If the relationship is not linear, then the model will make 
+# systematic errors. For example, if we generate data where y is a function of
+# the square of x and then fit a linear model y ∼ x, this will draw a straight 
+# line through a cloud of points that is curved.
+
+x <- rnorm(500)
+y <- x^2 + rnorm(500)
+toy.model <- lm(y~x)
+summary(toy.model)
+plot(y~x)
+abline(toy.model)
+
+# This results in this plot and you can see from the plot that there is a 
+# clear pattern in the residuals: our model under-predicts the value of y near
+# zero and over-predicts far from zero.
+
+# Another assumption of a linear model is that prediction errors—the parts of 
+# the data that do not exactly fit the model—are normally distributed and look 
+# like random noise with no pattern. One way to examine this is to plot the 
+# model’s fitted values (the predictions) versus the residuals (the prediction
+# errors).
+
+plot(toy.model$fitted.values, toy.model$residuals)
+
+# You can see from the plot that there is a clear pattern in the residuals: our
+# model under-predicts the value of y near zero and over-predicts far from zero.
+# The more points near 0, the more it underpredicts.
+
+# R suggests four specific plots to assess the fit of linear model objects and 
+# you can look at all four simply by using plot() with any lm object. To see 
+# all four plots at once, we type par(mfrow=c(2,2))
+
+par(mfrow=c(2,2))
+plot(m1)
+
+# The first plot (in the upper left corner) shows the fitted values versus 
+# residuals for m1, just as we produced manually for our toy y ∼ x model. There
+# is no obvious pattern between the fitted values for overall satisfaction and 
+# the residuals; this is consistent with the idea that the residuals are due to
+# random error, and supports the notion that the model is adequate.
+
+# The second plot in the lower left is similar to the first, except that 
+# instead of plotting the raw residual value, it plots the square root of the
+# standardized residual. Again, there should be no clear pattern; if there were
+# it might indicate a nonlinear relationship. Observations with high residuals 
+# are flagged as potential outliers, and R labels them with row numbers in case 
+# we wish to inspect them in the data frame.
+
+# A common pattern in residual plots is a cone or funnel, where the range of 
+# errors gets progressively larger for larger fitted values. This is called 
+# heteroskedasticity and is a violation of linear model assumptions. A linear
+# model tries to maximize fit to the line; when values in one part of the range 
+# have a much larger spread than those in another area, they have undue 
+# influence on the estimation of the line. Sometimes a transformation of the 
+# predictor or outcome variable will resolve heteroskedasticity.
+
+# The third result of plot() for lm objects is a Normal QQ plot, as in the 
+# upper right. A QQ plot helps you see whether the residuals follow a normal 
+# distribution, another key assumption (see Sect. 3.4.3). It compares the 
+# values that residuals would be expected to take if they are normally 
+# distributed, versus their actual values. When the model is appropriate, these
+# points are similar and fall close to a diagonal line; when the relationship 
+# between the variables is nonlinear or otherwise does not match the 
+# assumption, the points deviate from the diagonal line. In the present case, 
+# the QQ plot suggests that the data fits the assumption of the model.
+
+# We do not want one or a very few observations to have a large effect on the
+# coefficients. The lower right plot plots the leverage of each point, a 
+# measure of how much influence the point has on the model coefficients. When
+# a point has a high residual and high leverage, it indicates that the point 
+# has both a different pattern (residual) and undue influence (leverage).
+
+# One measure of the leverage of a data point is Cook’s distance, an estimate 
+# of how much predicted (y) values would change if the model were re-estimated
+# with that point eliminated from the data. If you have observations with high 
+# Cook’s distance, this chart would show dotted lines for the distances; in the
+# present case, there are none.
+
+# Fitting Linear Models with Multiple Predictors
+
