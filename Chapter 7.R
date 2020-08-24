@@ -235,3 +235,59 @@ plot(m1)
 
 # Fitting Linear Models with Multiple Predictors
 
+# Looking first at the model fit statistics at the bottom of the output, we 
+# see that our prediction was improved by including all the satisfaction 
+# items in the model. The R-squared increased to 0.5586, meaning that about 
+# half of the variation in overall ratings is explained by the ratings for 
+# specific features. The residual standard error is now 10.59, meaning that 
+# the predictions are more accurate. Our residuals also appear to be symmetric. 
+# As noted above, we recommend also to inspect the model using plot() to 
+# confirm that there are no patterns in the residuals indicative of 
+# nonlinearity or outliers, although we omit that step here.
+m2 <- lm(overall ~ rides + games + wait + clean, data = sat.df)
+summary(m2)
+
+par(mfrow = c(2, 2))
+plot(m2)
+# In Fig.7.5, the first plot (in the upper left corner) shows the fitted 
+# values versus residuals for m1, just as we produced manually for our toy y∼x 
+# model. In Fig.7.5 there is no obvious pattern between the fitted values for 
+# overall satisfaction and the residuals; this is consistent with the idea that 
+# the residuals are due to random error, and supports the notion that the model
+# is adequate.
+# The second plot in the lower left of Fig.7.5 is similar to the first, except 
+# that instead of plotting the raw residual value, it plots the square root of 
+# the standardized residual. Again, there should be no clear pattern; if there
+# were it might indicate a nonlinear relationship. Observations with high 
+# residuals are flagged as potential outliers, and R labels them with row
+# numbers in case we wish to inspect them in the data frame.
+# A common pattern in residual plots is a cone or funnel, where the range of
+# errors gets progressively larger for larger fitted values. This is called
+# heteroskedasticity and is a violation of linear model assumptions. A linear 
+# model tries to maximize fit to the line; “when values in one part of the 
+# range have a much larger spread than those in another area, they have undue 
+# influence on the estimation of the line. Sometimes a transformation of the 
+# predictor or outcome variable will resolve heteroskedasticity
+# “The third result of plot() for lm objects is a Normal QQ plot, as in the 
+# upper right of Fig.7.5. A QQ plot helps you see whether the residuals follow 
+# a normal distribution, another key assumption (see Sect.3.4.3). It compares 
+# the values that residuals would be expected to take if they are normally 
+# distributed, versus their actual values. When the model is appropriate, these
+# points are similar and fall close to a diagonal line; when the relationship 
+# between the variables is nonlinear or otherwise does not match the 
+# assumption, the points deviate from the diagonal line. In the present case, 
+# the QQ plot suggests that the data fits the assumption of the model.
+# The final plot in the lower right panel of Fig.7.5 again helps to identify 
+# potential outliers, observations that may come from a different distribution 
+# than the others. Outliers are a problem because, if they are far from other
+# points, they unduly influence the fitted line. We do not want one or a very 
+# few observations to have a large effect on the coefficients. The lower right 
+# plot in Fig.7.5 plots the leverage of each point, a measure of how much 
+# influence the point has on the model coefficients. When a point has a high 
+# residual and high leverage, it indicates that the point has both a different 
+# pattern (residual) and undue influence (leverage). One measure of the 
+# leverage of a data point is Cook’s distance, an estimate of how much
+# predicted (y) values would change if the model were re-estimated with that 
+# point eliminated from the data. If you have observations with high Cook’s 
+# distance, this chart would show dotted lines for the distances; in the 
+# present case, there are none.
